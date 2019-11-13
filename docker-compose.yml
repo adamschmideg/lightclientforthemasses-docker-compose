@@ -6,12 +6,13 @@ services:
                         - geth
                         - --metrics
                         - --metrics.influxdb
-                        - --metrics.influxdb.endpoint=http://dockercomposelightclient_influxdb_1:8086
+                        - --metrics.influxdb.endpoint=http://ze_db:8086
                         - --metrics.influxdb.username=admin
                         - --metrics.influxdb.password=password
                         - --metrics.influxdb.database=metrics
                         - --goerli
         influxdb:
+                container_name: ze_db
                 image: influxdb:latest
                 environment:
                         - INFLUXDB_DB=metrics
