@@ -1,0 +1,10 @@
+{
+    "name":"test_datasource",
+    "type":"influxdb",
+    "url":"http://influxdb:8086",
+    "access":"proxy",
+    "database":"metrics",
+    "basicAuth":false,
+    "user":"admin",
+    "password":"admin"
+  }
