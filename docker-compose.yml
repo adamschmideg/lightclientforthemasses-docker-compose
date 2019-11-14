@@ -2,18 +2,19 @@ version: '3'
 services:
         geth:
                 image: ethereum/client-go:latest
+                container_name: geth
                 entrypoint:
                         - geth
                         - --metrics
                         - --metrics.influxdb
-                        - --metrics.influxdb.endpoint=http://ze_db:8086
+                        - --metrics.influxdb.endpoint=http://influxdb:8086
                         - --metrics.influxdb.username=admin
                         - --metrics.influxdb.password=password
                         - --metrics.influxdb.database=metrics
                         - --goerli
         influxdb:
-                container_name: ze_db
                 image: influxdb:latest
+                container_name: influxdb
                 environment:
                         - INFLUXDB_DB=metrics
                         - INFLUXDB_ADMIN_USERNAME=admin
@@ -22,5 +23,6 @@ services:
                        - 8086
         grafana:
                 image: grafana/grafana
+                container_name: grafana
                 ports:
                         - "3000:3000"
