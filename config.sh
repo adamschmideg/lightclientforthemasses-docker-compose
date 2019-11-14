@@ -5,3 +5,9 @@ curl -u'admin:foobar' \
  -H "Content-Type: application/json" \
  -d@datasource.json \
  http://localhost:3000/api/datasources
+
+curl -u'admin:foobar' \
+ -X POST \
+ -H "Content-Type: application/json" \
+ -d@dashboard.json \
+ http://localhost:3000/api/dashboards/db
