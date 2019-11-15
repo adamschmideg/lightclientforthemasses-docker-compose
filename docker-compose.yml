@@ -1,17 +1,5 @@
 version: '3'
 services:
-        geth:
-                image: ethereum/client-go:latest
-                container_name: geth
-                entrypoint:
-                        - geth
-                        - --metrics
-                        - --metrics.influxdb
-                        - --metrics.influxdb.endpoint=http://influxdb:8086
-                        - --metrics.influxdb.username=admin
-                        - --metrics.influxdb.password=password
-                        - --metrics.influxdb.database=metrics
-                        - --goerli
         influxdb:
                 image: influxdb:latest
                 container_name: influxdb
@@ -21,9 +9,26 @@ services:
                         - INFLUXDB_ADMIN_PASSWORD=password
                 expose:
                        - 8086
+        geth:
+                image: ethereum/client-go:latest
+                container_name: geth
+                depends_on:
+                        - influxdb
+                entrypoint:
+                        - geth
+                        - --metrics
+                        - --metrics.influxdb
+                        - --metrics.influxdb.endpoint=http://influxdb:8086
+                        - --metrics.influxdb.username=admin
+                        - --metrics.influxdb.password=password
+                        - --metrics.influxdb.database=metrics
+                        - --goerli
         grafana:
                 image: grafana/grafana
                 container_name: grafana
+                depends_on:
+                        - influxdb
+                        - geth
                 volumes:
                         - ./grafana/provisioning/:/etc/grafana/provisioning/
                 ports:
