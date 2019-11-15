@@ -24,5 +24,9 @@ services:
         grafana:
                 image: grafana/grafana
                 container_name: grafana
+                environment:
+                        - DS_INFLUXDB=InfluxDB
+                volumes:
+                        - ./grafana/provisioning/:/etc/grafana/provisioning/
                 ports:
                         - "3000:3000"
