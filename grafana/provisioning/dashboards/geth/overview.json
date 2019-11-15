@@ -51,7 +51,7 @@
   "panels": [
     {
       "collapsed": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -68,7 +68,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -235,7 +235,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -402,7 +402,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -569,7 +569,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -736,7 +736,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -903,7 +903,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -1156,7 +1156,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -1320,7 +1320,7 @@
     },
     {
       "collapsed": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1337,7 +1337,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -1509,7 +1509,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -1647,7 +1647,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -1819,7 +1819,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -1957,7 +1957,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -2129,7 +2129,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -2301,7 +2301,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -2470,7 +2470,7 @@
     },
     {
       "collapsed": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -2487,7 +2487,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -2654,7 +2654,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -2821,7 +2821,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -2954,7 +2954,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -3121,7 +3121,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -3288,7 +3288,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -3421,7 +3421,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -3588,7 +3588,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -3721,7 +3721,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -3888,7 +3888,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -4021,7 +4021,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -4154,7 +4154,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -4321,7 +4321,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -4454,7 +4454,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -4621,7 +4621,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -4754,7 +4754,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -4887,7 +4887,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -5042,7 +5042,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -5197,7 +5197,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -5352,7 +5352,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -5470,7 +5470,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -5603,7 +5603,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -5733,7 +5733,7 @@
     },
     {
       "collapsed": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -5751,7 +5751,7 @@
       "cacheTimeout": null,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -5952,7 +5952,7 @@
       "cacheTimeout": null,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -6153,7 +6153,7 @@
       "cacheTimeout": null,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -6353,7 +6353,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -6486,7 +6486,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -6619,7 +6619,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -6801,7 +6801,7 @@
     },
     {
       "collapsed": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -6818,7 +6818,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -6985,7 +6985,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -7118,7 +7118,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -7285,7 +7285,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -7418,7 +7418,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -7585,7 +7585,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -7718,7 +7718,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -7851,7 +7851,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -7984,7 +7984,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -8117,7 +8117,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_INFLUXDB}",
+      "datasource": "InfluxDB",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -8255,7 +8255,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_INFLUXDB}",
+        "datasource": "InfluxDB",
         "definition": "SHOW TAG VALUES WITH KEY = \"host\"",
         "hide": 0,
         "includeAll": false,
@@ -8277,7 +8277,7 @@
       {
         "allValue": null,
         "current": {},
-        "datasource": "${DS_INFLUXDB}",
+        "datasource": "InfluxDB",
         "definition": "SHOW TAG VALUES WITH KEY = \"host\"",
         "hide": 0,
         "includeAll": false,
