@@ -9,9 +9,9 @@ services:
       - INFLUXDB_ADMIN_PASSWORD=password
     expose:
       - 8086
-  geth:
+  lightserver:
     image: ethereum/client-go:latest
-    container_name: geth
+    container_name: lightserver
     depends_on:
       - influxdb
     entrypoint:
@@ -22,14 +22,30 @@ services:
       - --metrics.influxdb.username=admin
       - --metrics.influxdb.password=password
       - --metrics.influxdb.database=metrics
+      - --lightserv=100
+      - --rpc
+      - --rpcapi=les
       - --goerli
+    expose:
+      - 8545
   grafana:
     image: grafana/grafana
     container_name: grafana
     depends_on:
       - influxdb
-      - geth
+      - lightserver
     volumes:
       - ./grafana/provisioning/:/etc/grafana/provisioning/
     ports:
       - "3000:3000"
+  faucet:
+    image: golang
+    container_name: faucet
+    depends_on:
+      - lightserver
+    command: >
+      bash -c "go get ./... && go run /faucet.go"
+    volumes:
+      - './faucet.go:/faucet.go'
+    ports:
+      - "8080:8080"
