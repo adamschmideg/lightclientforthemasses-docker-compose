@@ -7,7 +7,8 @@ services:
       - geth
       - --lightserv=100
       - --rpc
-      - --rpcapi=les
+      - --rpcapi=admin,les,web3
+      - --rpcaddr=0.0.0.0
       - --goerli
     ports:
       - "8545:8545"
@@ -16,10 +17,11 @@ services:
     container_name: client
     entrypoint:
       - geth
-      - syncmode="light"
+      - --syncmode=light
       - --rpc
-      - --rpcapi=admin,les
+      - --rpcapi=admin,les,web3
       - --rpcport=8546
+      - --rpcaddr=0.0.0.0
       - --goerli
     ports:
       - "8546:8546"
@@ -28,8 +30,6 @@ services:
     container_name: faucet
     depends_on:
       - lightserver
-    command: >
-      bash -c "go get ./... && go run /faucet.go"
     volumes:
       - './faucet.go:/faucet.go'
     ports:
