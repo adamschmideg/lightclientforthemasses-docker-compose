@@ -1,0 +1,36 @@
+version: '3'
+services:
+  lightserver:
+    image: ethereum/client-go:latest
+    container_name: lightserver
+    entrypoint:
+      - geth
+      - --lightserv=100
+      - --rpc
+      - --rpcapi=les
+      - --goerli
+    ports:
+      - "8545:8545"
+  client:
+    image: ethereum/client-go:latest
+    container_name: client
+    entrypoint:
+      - geth
+      - syncmode="light"
+      - --rpc
+      - --rpcapi=admin,les
+      - --rpcport=8546
+      - --goerli
+    ports:
+      - "8546:8546"
+  faucet:
+    image: golang
+    container_name: faucet
+    depends_on:
+      - lightserver
+    command: >
+      bash -c "go get ./... && go run /faucet.go"
+    volumes:
+      - './faucet.go:/faucet.go'
+    ports:
+      - "8080:8080"
