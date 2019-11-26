@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -16,45 +17,26 @@ type balanceInfo struct {
 	IsConnected bool
 }
 
-func addBalanceLocally(nodeID string, balance int, topic string) (balanceInfo, error) {
-	var info balanceInfo
-	server, err := rpc.Dial("http://127.0.0.1:8545")
-	if err != nil {
-		return info, fmt.Errorf("Server", err)
-	}
-
-	var balances []int
-	if err := server.Call(&balances, "les_addBalance", nodeID, balance, topic); err != nil {
-		return info, fmt.Errorf("balance", err)
-	} 
-	info.BalanceBefore = balances[0]
-	info.BalanceAfter = balances[1]
-
-	//var clientInfo map[string]interface{}
-	clientIDs := []string{nodeID}	
-	if err := server.Call(&info, "les_clientInfo", clientIDs); err != nil {
-		return info, fmt.Errorf("clientinfo", err)
-	}
-	return info, nil
-}
-
 func addBalance()(error) {
 
-	client, err := rpc.Dial("http://127.0.0.1:8546")
+	rpcClient, err := rpc.Dial("http://127.0.0.1:8546")
 	if err != nil {
 		return fmt.Errorf("Client", err)
 	}
 
 	var nodeInfo nodeInfo
-	if err := client.Call(&nodeInfo, "admin_nodeInfo"); err != nil {
+	if err := rpcClient.Call(&nodeInfo, "admin_nodeInfo"); err != nil {
 		return fmt.Errorf("NodeInfo", err)
 	}
+	fmt.Println("Node", nodeInfo)
 
-	info, err := addBalanceLocally(nodeInfo.ID, 1000, "foobar")
+	faucetEndpoint := "http://127.0.0.1:8088"
+	url := fmt.Sprintf("%s?nodeID=%s", faucetEndpoint, nodeInfo.ID)
+	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
-	fmt.Println(info)
+	fmt.Println(resp)
 	return nil
 }
 
