@@ -1,7 +1,7 @@
 version: '3'
 services:
   lightserver:
-    image: ethereum/client-go:release-1.9
+    image: ethereum/client-go:latest
     container_name: lightserver
     entrypoint:
       - geth
@@ -13,7 +13,7 @@ services:
     ports:
       - "8545:8545"
   client:
-    image: ethereum/client-go:release-1.9
+    image: ethereum/client-go:latest
     container_name: client
     entrypoint:
       - geth
