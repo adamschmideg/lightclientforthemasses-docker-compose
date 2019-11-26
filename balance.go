@@ -31,12 +31,12 @@ func addBalance()(error) {
 	}
 	fmt.Println(balance)
 
-	var clientInfo []interface{}
+	var clientInfo map[string]interface{}
 	clientIDs := []string{nodeInfo.ID}	
 	if err := server.Call(&clientInfo, "les_clientInfo", clientIDs); err != nil {
 		return err
 	}
-	fmt.Println(clientInfo)
+	fmt.Println(clientInfo[nodeInfo.ID])
 	return nil
 }
 
