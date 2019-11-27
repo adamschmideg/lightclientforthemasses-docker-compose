@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -11,13 +12,7 @@ type nodeInfo struct {
 	ID string
 }
 
-type balanceInfo struct {
-	BalanceBefore int
-	BalanceAfter int
-	IsConnected bool
-}
-
-func addBalance()(error) {
+func useFaucet(clientRPCEndpoint string, faucetEndpoint string)(error) {
 
 	rpcClient, err := rpc.Dial("http://127.0.0.1:8546")
 	if err != nil {
@@ -30,18 +25,23 @@ func addBalance()(error) {
 	}
 	fmt.Println("Node", nodeInfo)
 
-	faucetEndpoint := "http://127.0.0.1:8088"
-	url := fmt.Sprintf("%s?nodeID=%s", faucetEndpoint, nodeInfo.ID)
-	resp, err := http.Get(url)
+	formData := url.Values{
+		"nodeID": {nodeInfo.ID},
+	}
+	resp, err := http.PostForm(faucetEndpoint, formData)
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
+
 	fmt.Println(resp)
 	return nil
 }
 
 func main() {
-	err := addBalance()
+	clientRPCEndpoint := "http://127.0.0.1:8546"
+	faucetEndpoint := "http://127.0.0.1:8088"
+	err := useFaucet(clientRPCEndpoint, faucetEndpoint)
 	if err != nil {
 		fmt.Println(err)
 	}

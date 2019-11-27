@@ -16,3 +16,9 @@ Influxdb data source:
   * DB name: metrics
   * User name: admin
   * Password: password
+
+## Run in development
+
+1. `docker-compose -f docker-compose.dev.yml up`
+2. `go run faucet.go`
+3. `go run usefaucet.go`

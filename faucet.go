@@ -9,18 +9,19 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
-type BalanceInfo struct {
+type balanceInfo struct {
 	BalanceBefore int
 	BalanceAfter int
 	IsConnected bool
 }
 
-func AddBalance(serverRpcEndpoint string, clientNodeID string, balance int, topic string) (BalanceInfo,error) {
-	var info BalanceInfo
-	server, err := rpc.Dial(serverRpcEndpoint)
+func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topic string) (balanceInfo,error) {
+	var info balanceInfo
+	server, err := rpc.Dial(serverRPCEndpoint)
 	if err != nil {
 		return info, fmt.Errorf("Server", err)
 	}
+	log.Printf("Server connected")
 
 	var balances []int
 	if err := server.Call(&balances, "les_addBalance", clientNodeID, balance, topic); err != nil {
@@ -28,21 +29,25 @@ func AddBalance(serverRpcEndpoint string, clientNodeID string, balance int, topi
 	} 
 	info.BalanceBefore = balances[0]
 	info.BalanceAfter = balances[1]
+	log.Println("AddBalance success", balances)
 
 	return info, nil
 }
 
-func GetBalance(serverRpcEndpoint string, nodeID string) (BalanceInfo,error) {
-	var info BalanceInfo
-	server, err := rpc.Dial(serverRpcEndpoint)
+func getBalance(serverRPCEndpoint string, nodeID string) (balanceInfo,error) {
+	var info balanceInfo
+	log.Printf("GetBalance called at %s for %s", serverRPCEndpoint, nodeID)
+	server, err := rpc.Dial(serverRPCEndpoint)
 	if err != nil {
 		return info, fmt.Errorf("Server", err)
 	}
+	log.Printf("Server connected")
 
 	clientIDs := []string{nodeID}	
 	if err := server.Call(&info, "les_clientInfo", clientIDs); err != nil {
 		return info, fmt.Errorf("clientinfo", err)
 	}
+	log.Printf("Got balance %s", info)
 	return info, nil
 }
 
@@ -54,14 +59,14 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	if nodeID == "" {
 		fmt.Fprint(w, "nodeID is required")
 	} else if r.Method == "POST" {
-		info, err := AddBalance(rpcEndpoint, nodeID, 1000, "foobar")
+		info, err := addBalance(rpcEndpoint, nodeID, 1000, "foobar")
 		if err != nil {
 			fmt.Fprintf(w, "Can't add balance %s", err)
 		} else {
 			fmt.Fprintf(w, "Added balance %s", info)
 		}
 	} else if r.Method == "GET" {
-		info, err := GetBalance(rpcEndpoint, nodeID)
+		info, err := getBalance(rpcEndpoint, nodeID)
 		if err != nil {
 			fmt.Fprintf(w, "Can't get info %s", err)
 		} else {
