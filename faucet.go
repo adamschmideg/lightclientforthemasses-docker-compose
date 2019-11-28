@@ -1,8 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
-	//"html/template"
+	"html/template"
 	"log"
 	"net/http"
 
@@ -53,53 +54,44 @@ func getBalance(serverRPCEndpoint string, nodeID string) (balanceInfo,error) {
 
 const rpcEndpoint string = "http://127.0.0.1:8545"
 
+type formData struct {
+	NodeID string
+	Error error
+	Info balanceInfo
+	RPCEndpoint string
+}
+
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	nodeID := r.FormValue("nodeID")
-	if nodeID == "" {
-		fmt.Fprint(w, "nodeID is required")
-	} else if r.Method == "POST" {
-		info, err := addBalance(rpcEndpoint, nodeID, 1000, "foobar")
-		if err != nil {
-			fmt.Fprintf(w, "Can't add balance %s", err)
-		} else {
-			fmt.Fprintf(w, "Added balance %s", info)
-		}
-	} else if r.Method == "GET" {
-		info, err := getBalance(rpcEndpoint, nodeID)
-		if err != nil {
-			fmt.Fprintf(w, "Can't get info %s", err)
-		} else {
-			fmt.Fprintf(w, "info %s", info)
-		}
-	}
-}
+	var err error
+	var info balanceInfo
+	log.Println("handle", r.Method, r.Form)
 
-func _rootHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	/*
-	t, err := template.ParseFiles("test.html")
+	switch {
+	case nodeID == "":
+		err = errors.New("nodeID is required")
+	case r.Method == http.MethodPost:
+		info, err = addBalance(rpcEndpoint, nodeID, 1000, "foobar")
+	case r.Method == http.MethodGet:
+		info, err = getBalance(rpcEndpoint, nodeID)
+	default:
+		err = errors.New("Unsupported method")
+	}
+
+	fillData := formData{nodeID, err, info, rpcEndpoint}
+
+	t, err := template.ParseFiles("index.html")
 	if err != nil {
-		log.Println("Problem", err)
+		log.Println("Parsing html", err)
+		fmt.Fprintln(w, "Internal error")
+		return
 	}
-	fillData := struct{}{}
-	*/
+	fmt.Println("fillData", fillData)
+	if err := t.Execute(w, fillData); err != nil {
+		fmt.Fprintln(w, "internal error")
+	}
 
-	nodeID := r.FormValue("nodeID")
-	if nodeID == "" {
-		fmt.Fprint(w, "nodeID is required")
-	} else if r.Method == "POST" && r.FormValue("cmd") == "addBalance" {
-	}
-	if r.Method == "POST" {
-		cmd := r.FormValue("cmd")
-		if cmd == "addBalance" {
-
-		}
-		fmt.Fprintf(w, "addBalance(\"%s\"", r.FormValue("nodeID"))
-	} else {
-		//t.Execute(w, fillData)
-		fmt.Fprintf(w, "<h1>Hello</h1>")
-	}
 }
 
 func main() {

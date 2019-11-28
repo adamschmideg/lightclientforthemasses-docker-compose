@@ -11,13 +11,13 @@
     </head>
     <body>
         <div class="container">
-            <form class="text-horizontal" action="/" method="POST">
-                <p class="h4 mb-4">Give me priority access to the Light Server</p>
-                <input type="text" id="nodeID" class="form-control mb-4" placeholder="NodeID">
+            <form class="text-horizontal" action="/" method="POST" role="form">
+                <p class="h4 mb-4">Give me priority access to the Light Server at {{ .RPCEndpoint }}</p>
+                <input type="text" id="nodeID" name="nodeID" class="form-control mb-4" placeholder="NodeID" value="{{ .NodeID }}">
                 <button class="btn btn-default button-primary" type="submit">Gimme</button>
             </form>
         </div>
+        {{ .Error }}
+        {{ .Info }}
     </body>
-    {{ .NodeID }}
-    {{ .Error }}
 </html>

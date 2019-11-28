@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -33,8 +34,9 @@ func useFaucet(clientRPCEndpoint string, faucetEndpoint string)(error) {
 		return err
 	}
 	defer resp.Body.Close()
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
 
-	fmt.Println(resp)
 	return nil
 }
 
