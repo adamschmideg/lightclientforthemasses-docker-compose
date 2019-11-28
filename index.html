@@ -16,8 +16,17 @@
                 <input type="text" id="nodeID" name="nodeID" class="form-control mb-4" placeholder="NodeID" value="{{ .NodeID }}">
                 <button class="btn btn-default button-primary" type="submit">Gimme</button>
             </form>
+            {{ .Error }}
+            <table class="table-striped">
+                <tbody>
+                    {{ range $k, $v := .Client }}
+                    <tr>
+                        <td>{{ $k }}</td>
+                        <td>{{ $v }}</td>
+                    </tr>
+                    {{ end }}
+                </tbody>
+            </table>
         </div>
-        {{ .Error }}
-        {{ .Info }}
     </body>
 </html>

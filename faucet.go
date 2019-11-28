@@ -13,7 +13,6 @@ import (
 type balanceInfo struct {
 	BalanceBefore int
 	BalanceAfter int
-	IsConnected bool
 }
 
 func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topic string) (balanceInfo,error) {
@@ -35,21 +34,26 @@ func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topi
 	return info, nil
 }
 
-func getBalance(serverRPCEndpoint string, nodeID string) (balanceInfo,error) {
-	var info balanceInfo
+type allClientsInfo map[string]map[string]interface{}
+type clientInfo map[string]interface{}
+
+func getBalance(serverRPCEndpoint string, nodeID string) (clientInfo,error) {
+	var allInfo allClientsInfo
+	var cInfo clientInfo
 	log.Printf("GetBalance called at %s for %s", serverRPCEndpoint, nodeID)
 	server, err := rpc.Dial(serverRPCEndpoint)
 	if err != nil {
-		return info, fmt.Errorf("Server", err)
+		return cInfo, fmt.Errorf("Server", err)
 	}
 	log.Printf("Server connected")
 
 	clientIDs := []string{nodeID}	
-	if err := server.Call(&info, "les_clientInfo", clientIDs); err != nil {
-		return info, fmt.Errorf("clientinfo", err)
+	if err := server.Call(&allInfo, "les_clientInfo", clientIDs); err != nil {
+		return cInfo, fmt.Errorf("clientinfo", err)
 	}
-	log.Printf("Got balance %s", info)
-	return info, nil
+	cInfo = allInfo[nodeID]
+	log.Printf("Got balance %s", allInfo)
+	return cInfo, nil
 }
 
 const rpcEndpoint string = "http://127.0.0.1:8545"
@@ -57,7 +61,8 @@ const rpcEndpoint string = "http://127.0.0.1:8545"
 type formData struct {
 	NodeID string
 	Error error
-	Info balanceInfo
+	Balance balanceInfo
+	Client clientInfo
 	RPCEndpoint string
 }
 
@@ -65,21 +70,26 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	nodeID := r.FormValue("nodeID")
 	var err error
-	var info balanceInfo
+	var bInfo balanceInfo
+	var cInfo clientInfo
 	log.Println("handle", r.Method, r.Form)
 
 	switch {
 	case nodeID == "":
 		err = errors.New("nodeID is required")
 	case r.Method == http.MethodPost:
-		info, err = addBalance(rpcEndpoint, nodeID, 1000, "foobar")
+		bInfo, err = addBalance(rpcEndpoint, nodeID, 1000, "foobar")
+		cInfo, err = getBalance(rpcEndpoint, nodeID)
+		if cInfo != nil {
+			cInfo["pricing/oldBalance"] = bInfo.BalanceBefore
+		}
 	case r.Method == http.MethodGet:
-		info, err = getBalance(rpcEndpoint, nodeID)
+		cInfo, err = getBalance(rpcEndpoint, nodeID)
 	default:
 		err = errors.New("Unsupported method")
 	}
 
-	fillData := formData{nodeID, err, info, rpcEndpoint}
+	fillData := formData{nodeID, err, bInfo, cInfo, rpcEndpoint}
 
 	t, err := template.ParseFiles("index.html")
 	if err != nil {
@@ -89,6 +99,7 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("fillData", fillData)
 	if err := t.Execute(w, fillData); err != nil {
+		log.Println("Executing template", err)
 		fmt.Fprintln(w, "internal error")
 	}
 
