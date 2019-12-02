@@ -12,6 +12,7 @@ FROM alpine:latest AS production
 
 COPY --from=builder /go/faucet /usr/local/bin/
 COPY --from=builder /go/index.html /usr/local/bin/
+WORKDIR /usr/local/bin
 
 EXPOSE 8088
 ENTRYPOINT ["faucet"]
