@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
 
 	"github.com/ethereum/go-ethereum/rpc"
@@ -107,6 +108,14 @@ func makeRootHandler(rpcEndpoint string, templatePath string) func(http.Response
 	return handler
 }
 
+func lookupIP(address string) string {
+	ips, _ := net.LookupIP(address)
+	if (len(ips) > 0) {
+		return ips[0].String()
+	}
+	return address
+}
+
 func main() {
 	rpcaddr := flag.String("rpcaddr", "127.0.0.1", "Address of the lightserver's rpc endpoint")
 	rpcport := flag.Int("rpcport", 8545, "Port of the lightserver's rpc endpoint")
@@ -114,7 +123,8 @@ func main() {
 	templatePath := flag.String("template", "/var/www/faucet.html", "Full path to the html template file")
 	flag.Parse()
 
-	rpcEndpoint := fmt.Sprintf("http://%s:%v", *rpcaddr, *rpcport)
+	rpcIP := lookupIP(*rpcaddr)
+	rpcEndpoint := fmt.Sprintf("http://%s:%v", rpcIP, *rpcport)
 	rootHandler := makeRootHandler(rpcEndpoint, *templatePath)
 	wsAddress := fmt.Sprintf(":%v", *port)
 	log.Println("Listening at", wsAddress, ", calling", rpcEndpoint)
