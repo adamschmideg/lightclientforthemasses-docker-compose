@@ -39,13 +39,9 @@ services:
     ports:
       - "3000:3000"
   faucet:
-    image: golang
+    image: offcode/lightfaucet
     container_name: faucet
     depends_on:
       - lightserver
-    command: >
-      bash -c "go get ./... && go run /faucet.go"
-    volumes:
-      - './faucet.go:/faucet.go'
     ports:
-      - "8080:8080"
+      - "8088:80"

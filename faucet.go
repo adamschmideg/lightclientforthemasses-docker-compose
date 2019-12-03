@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"html/template"
 	"log"
@@ -56,8 +57,6 @@ func getBalance(serverRPCEndpoint string, nodeID string) (clientInfo,error) {
 	return cInfo, nil
 }
 
-const rpcEndpoint string = "http://127.0.0.1:8545"
-
 type formData struct {
 	NodeID string
 	Error error
@@ -66,46 +65,60 @@ type formData struct {
 	RPCEndpoint string
 }
 
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	nodeID := r.FormValue("nodeID")
-	var err error
-	var bInfo balanceInfo
-	var cInfo clientInfo
-	log.Println("handle", r.Method, r.Form)
+func makeRootHandler(rpcEndpoint string, templatePath string) func(http.ResponseWriter, *http.Request) {
+	handler := func (w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		nodeID := r.FormValue("nodeID")
+		var err error
+		var bInfo balanceInfo
+		var cInfo clientInfo
+		log.Println("handle", r.Method, r.Form)
 
-	switch {
-	case nodeID == "":
-		err = errors.New("nodeID is required")
-	case r.Method == http.MethodPost:
-		bInfo, err = addBalance(rpcEndpoint, nodeID, 1000, "foobar")
-		cInfo, err = getBalance(rpcEndpoint, nodeID)
-		if cInfo != nil {
-			cInfo["pricing/oldBalance"] = bInfo.BalanceBefore
+		switch {
+		case nodeID == "":
+			err = errors.New("nodeID is required")
+		case r.Method == http.MethodPost:
+			bInfo, err = addBalance(rpcEndpoint, nodeID, 1000, "foobar")
+			cInfo, err = getBalance(rpcEndpoint, nodeID)
+			if cInfo != nil {
+				cInfo["pricing/oldBalance"] = bInfo.BalanceBefore
+			}
+		case r.Method == http.MethodGet:
+			cInfo, err = getBalance(rpcEndpoint, nodeID)
+		default:
+			err = errors.New("Unsupported method")
 		}
-	case r.Method == http.MethodGet:
-		cInfo, err = getBalance(rpcEndpoint, nodeID)
-	default:
-		err = errors.New("Unsupported method")
+
+		fillData := formData{nodeID, err, bInfo, cInfo, rpcEndpoint}
+
+		t, err := template.ParseFiles(templatePath)
+		if err != nil {
+			log.Println("Parsing html", err)
+			fmt.Fprintln(w, "Internal error")
+			return
+		}
+		fmt.Println("fillData", fillData)
+		if err := t.Execute(w, fillData); err != nil {
+			log.Println("Executing template", err)
+			fmt.Fprintln(w, "internal error")
+		}
 	}
 
-	fillData := formData{nodeID, err, bInfo, cInfo, rpcEndpoint}
-
-	t, err := template.ParseFiles("index.html")
-	if err != nil {
-		log.Println("Parsing html", err)
-		fmt.Fprintln(w, "Internal error")
-		return
-	}
-	fmt.Println("fillData", fillData)
-	if err := t.Execute(w, fillData); err != nil {
-		log.Println("Executing template", err)
-		fmt.Fprintln(w, "internal error")
-	}
-
+	return handler
 }
 
 func main() {
+	rpcaddr := flag.String("rpcaddr", "127.0.0.1", "Address of the lightserver's rpc endpoint")
+	rpcport := flag.Int("rpcport", 8545, "Port of the lightserver's rpc endpoint")
+	port := flag.Int("port", 8088, "Web service port of the faucet")
+	templatePath := flag.String("template", "/var/www/faucet.html", "Full path to the html template file")
+	flag.Parse()
+
+	rpcEndpoint := fmt.Sprintf("http://%s:%v", *rpcaddr, *rpcport)
+	rootHandler := makeRootHandler(rpcEndpoint, *templatePath)
+	wsAddress := fmt.Sprintf(":%v", *port)
+	log.Println("Listening at", wsAddress, ", calling", rpcEndpoint)
+	
 	http.HandleFunc("/", rootHandler)
-    log.Fatal(http.ListenAndServe(":8088", nil))
+    log.Fatal(http.ListenAndServe(wsAddress, nil))
 }

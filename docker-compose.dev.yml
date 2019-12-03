@@ -10,6 +10,8 @@ services:
       - --rpcapi=admin,les,web3
       - --rpcaddr=0.0.0.0
       - --goerli
+    networks:
+      - server
     ports:
       - "8545:8545"
   client:
@@ -26,11 +28,15 @@ services:
     ports:
       - "8546:8546"
   faucet:
-    image: golang
+    image: offcode/lightfaucet:latest
     container_name: faucet
     depends_on:
       - lightserver
-    volumes:
-      - './faucet.go:/faucet.go'
+    networks:
+      - server
     ports:
-      - "8080:8080"
+      - "8088:8088"
+
+networks:
+  server:
+    driver: bridge
