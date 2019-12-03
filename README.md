@@ -3,22 +3,20 @@
 In a directory of your choice, type:
 
 ```
-$ git clone http://github.com/gballet/lightclientforthemasses-docker-compose
+$ git clone http://github.com/adamschmideg/lightclientforthemasses-docker-compose
 $ cd lightclientforthemasses-docker-compose
+$ git checkout faucet
 $ docker-compose up
 ```
 
-Wait for all the containers to start up and find one another, and then you can access Grafana by visiting `localhost:3000` with your browser.
+Wait for all the containers to start up and find one another, and then you
+can access Grafana by visiting `localhost:3000` with your browser. Grafana
+admin credentials: admin/admin. You'll be requested to change it on your
+first login. It takes a few minutes until Geth manages to send data to
+InfluxDB, so monitoring data might be not immediately visible.
 
-Grafana admin credentials: admin/admin
-Influxdb data source:
-  * URL: http://ze_db:8086
-  * DB name: metrics
-  * User name: admin
-  * Password: password
+## Use it
 
-## Run in development
+- Visit http://localhost:8088
+- Enter a nodeID and submit it
 
-1. `docker-compose -f docker-compose.dev.yml up`
-2. `go run faucet.go`
-3. `go run usefaucet.go`
