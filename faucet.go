@@ -123,6 +123,7 @@ func main() {
 	templatePath := flag.String("template", "/var/www/faucet.html", "Full path to the html template file")
 	flag.Parse()
 
+	// I have to resolve to IP address inside a docker container, it's not working with a name
 	rpcIP := lookupIP(*rpcaddr)
 	rpcEndpoint := fmt.Sprintf("http://%s:%v", rpcIP, *rpcport)
 	rootHandler := makeRootHandler(rpcEndpoint, *templatePath)

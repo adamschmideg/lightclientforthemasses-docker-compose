@@ -10,7 +10,7 @@ services:
     expose:
       - 8086
   lightserver:
-    image: ethereum/client-go:latest
+    image: ethereum/client-go:v1.9.8
     container_name: lightserver
     depends_on:
       - influxdb
@@ -24,10 +24,13 @@ services:
       - --metrics.influxdb.database=metrics
       - --lightserv=100
       - --rpc
-      - --rpcapi=les
+      - --rpcapi=les,admin
+      - --rpcaddr=0.0.0.0
       - --goerli
     expose:
       - 8545
+    networks:
+      - server
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -39,9 +42,18 @@ services:
     ports:
       - "3000:3000"
   faucet:
-    image: offcode/lightfaucet
+    image: offcode/lightfaucet:latest
     container_name: faucet
     depends_on:
       - lightserver
     ports:
-      - "8088:80"
+      - "8088:8088"
+    entrypoint:
+      - faucet
+      - --rpcaddr=lightserver
+    networks:
+      - server
+
+networks:
+  server:
+    driver: bridge
