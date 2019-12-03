@@ -36,6 +36,9 @@ services:
       - server
     ports:
       - "8088:8088"
+    entrypoint:
+      - faucet
+      - --rpcaddr=lightserver
 
 networks:
   server:
