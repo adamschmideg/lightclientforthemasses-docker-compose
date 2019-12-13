@@ -12,11 +12,9 @@ func TestThrottling(t *testing.T) {
 		t.Errorf("first %s", err)
 	}
 	defer resp1.Body.Close()
-	/*
 	resp2, err := http.Get("http://127.0.0.1:8088")
-	if resp2 != nil {
-		t.Errorf("Expected error for second %s", resp2.Header)
+	if resp2.StatusCode == http.StatusOK {
+		t.Errorf("Expected error for second %s", resp2.Status)
 	}
 	defer resp2.Body.Close()
-	*/
 }

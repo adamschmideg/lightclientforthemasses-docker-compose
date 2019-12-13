@@ -9,6 +9,8 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/didip/tollbooth"
+	"github.com/didip/tollbooth/limiter"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -116,6 +118,12 @@ func lookupIP(address string) string {
 	return address
 }
 
+func rateLimiter() *limiter.Limiter {
+	lmt := tollbooth.NewLimiter(1, nil)
+	lmt.SetStatusCode(http.StatusTooManyRequests)
+	return lmt
+}
+
 func main() {
 	rpcaddr := flag.String("rpcaddr", "127.0.0.1", "Address of the lightserver's rpc endpoint")
 	rpcport := flag.Int("rpcport", 8545, "Port of the lightserver's rpc endpoint")
@@ -130,6 +138,7 @@ func main() {
 	wsAddress := fmt.Sprintf(":%v", *port)
 	log.Println("Listening at", wsAddress, ", calling", rpcEndpoint)
 	
-	http.HandleFunc("/", rootHandler)
+	lmt := rateLimiter()
+	http.Handle("/", tollbooth.LimitFuncHandler(lmt, rootHandler))
 	log.Fatal(http.ListenAndServe(wsAddress, nil))
 }
