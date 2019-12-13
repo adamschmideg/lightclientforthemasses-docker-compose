@@ -21,13 +21,13 @@ func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topi
 	var info balanceInfo
 	server, err := rpc.Dial(serverRPCEndpoint)
 	if err != nil {
-		return info, fmt.Errorf("Server", err)
+		return info, fmt.Errorf("rpc.Dial %s: %s", serverRPCEndpoint, err)
 	}
 	log.Printf("Server connected")
 
 	var balances []int
 	if err := server.Call(&balances, "les_addBalance", clientNodeID, balance, topic); err != nil {
-		return info, fmt.Errorf("balance", err)
+		return info, fmt.Errorf("les_addBalance %s", err)
 	} 
 	info.BalanceBefore = balances[0]
 	info.BalanceAfter = balances[1]
@@ -45,13 +45,13 @@ func getBalance(serverRPCEndpoint string, nodeID string) (clientInfo,error) {
 	log.Printf("GetBalance called at %s for %s", serverRPCEndpoint, nodeID)
 	server, err := rpc.Dial(serverRPCEndpoint)
 	if err != nil {
-		return cInfo, fmt.Errorf("Server", err)
+		return cInfo, fmt.Errorf("rpc.Dial %s: %s", serverRPCEndpoint, err)
 	}
 	log.Printf("Server connected")
 
 	clientIDs := []string{nodeID}	
 	if err := server.Call(&allInfo, "les_clientInfo", clientIDs); err != nil {
-		return cInfo, fmt.Errorf("clientinfo", err)
+		return cInfo, fmt.Errorf("les_clientinfo: %s", err)
 	}
 	cInfo = allInfo[nodeID]
 	log.Printf("Got balance %s", allInfo)
@@ -131,5 +131,5 @@ func main() {
 	log.Println("Listening at", wsAddress, ", calling", rpcEndpoint)
 	
 	http.HandleFunc("/", rootHandler)
-    log.Fatal(http.ListenAndServe(wsAddress, nil))
+	log.Fatal(http.ListenAndServe(wsAddress, nil))
 }
