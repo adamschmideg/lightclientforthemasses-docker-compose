@@ -66,9 +66,10 @@ type formData struct {
 	Balance balanceInfo
 	Client clientInfo
 	RPCEndpoint string
+	Recaptcha string
 }
 
-func makeRootHandler(rpcEndpoint string, templatePath string) func(http.ResponseWriter, *http.Request) {
+func makeRootHandler(rpcEndpoint string, templatePath string, recaptcha string) func(http.ResponseWriter, *http.Request) {
 	handler := func (w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		nodeID := r.FormValue("nodeID")
@@ -92,7 +93,7 @@ func makeRootHandler(rpcEndpoint string, templatePath string) func(http.Response
 			err = errors.New("Unsupported method")
 		}
 
-		fillData := formData{nodeID, err, bInfo, cInfo, rpcEndpoint}
+		fillData := formData{nodeID, err, bInfo, cInfo, rpcEndpoint, recaptcha}
 
 		t, err := template.ParseFiles(templatePath)
 		if err != nil {
@@ -129,12 +130,17 @@ func main() {
 	rpcport := flag.Int("rpcport", 8545, "Port of the lightserver's rpc endpoint")
 	port := flag.Int("port", 8088, "Web service port of the faucet")
 	templatePath := flag.String("template", "/var/www/faucet.html", "Full path to the html template file")
+	recaptchaPublic := flag.String("recaptcha.public", "hello", "Write it here")
+	recaptchaSecret := flag.String("recaptcha.secret", "xxx", "Write it here")
+	if len(*recaptchaSecret) > 0 {
+		fmt.Println("Recaptcha secret provided")
+	}
 	flag.Parse()
 
 	// I have to resolve to IP address inside a docker container, it's not working with a name
 	rpcIP := lookupIP(*rpcaddr)
 	rpcEndpoint := fmt.Sprintf("http://%s:%v", rpcIP, *rpcport)
-	rootHandler := makeRootHandler(rpcEndpoint, *templatePath)
+	rootHandler := makeRootHandler(rpcEndpoint, *templatePath, *recaptchaPublic)
 	wsAddress := fmt.Sprintf(":%v", *port)
 	log.Println("Listening at", wsAddress, ", calling", rpcEndpoint)
 	
