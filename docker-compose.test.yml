@@ -1,0 +1,44 @@
+version: '3'
+services:
+  lightserver:
+    image: ethereum/client-go:latest
+    container_name: lightserver
+    entrypoint:
+      - geth
+      - --lightserv=100
+      - --rpc
+      - --rpcapi=admin,les,web3
+      - --rpcaddr=0.0.0.0
+      - --goerli
+    networks:
+      - server
+    ports:
+      - "8545:8545"
+  faucet:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: faucet
+    depends_on:
+      - lightserver
+    networks:
+      - server
+    ports:
+      - "8088:8088"
+    entrypoint:
+      - faucet
+      - --rpcaddr=lightserver
+  test_faucet:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.test
+    container_name: test_faucet
+    depends_on:
+      - lightserver
+      - faucet
+    networks:
+      - server
+
+networks:
+  server:
+    driver: bridge

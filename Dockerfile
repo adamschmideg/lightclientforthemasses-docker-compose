@@ -6,11 +6,11 @@ RUN go get github.com/ethereum/go-ethereum/rpc
 
 FROM offcode/lightfaucet:dependencies AS builder
 WORKDIR /go
-ADD faucet.go .
-ADD faucet.html .
 RUN apk add git
 RUN go get github.com/didip/tollbooth
 RUN go get github.com/didip/tollbooth/limiter
+ADD faucet.go .
+ADD faucet.html .
 RUN go build faucet.go
   
 FROM alpine:latest AS production
