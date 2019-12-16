@@ -1,0 +1,4 @@
+FROM golang:alpine 
+ADD faucet_test.go .
+
+CMD CGO_ENABLED=0 go test -args -wsaddr faucet
