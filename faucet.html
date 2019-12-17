@@ -14,15 +14,11 @@
             <form class="text-horizontal" action="/" method="POST" role="form">
                 <p class="h4 mb-4">Give me priority access to the Light Server at {{ .RPCEndpoint }}</p>
                 <input type="text" id="nodeID" name="nodeID" class="form-control mb-4" placeholder="NodeID" value="{{ .NodeID }}">
+                {{ if .Recaptcha }}
+                <div class="g-recaptcha" data-sitekey="{{ .Recaptcha }}"></div>
+                {{ end }}
                 <button class="btn btn-default button-primary" type="submit">Gimme</button>
             </form>
-            {{ if .Recaptcha }}
-            <form action="/" method="POST">
-                <script src="https://www.google.com/recaptcha/api.js"></script>
-                    <div class="g-recaptcha" data-sitekey="{{ .Recaptcha }}"></div>
-                <input type="submit" name="button" value="Ok">
-            </form>
-            {{ end }}
             {{ .Error }}
             <table class="table-striped">
                 <tbody>
@@ -35,5 +31,8 @@
                 </tbody>
             </table>
         </div>
+        {{ if .Recaptcha }}
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        {{ end }}
     </body>
 </html>

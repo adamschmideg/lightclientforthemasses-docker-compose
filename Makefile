@@ -1,6 +1,12 @@
 test:
 	docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
 
+web:
+	# keys for testing from https://developers.google.com/recaptcha/docs/faq
+	go run faucet.go --template ./faucet.html \
+		--recaptcha.public '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' \
+		--recaptcha.secret '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
+
 # Run this first: docker-compose -f docker-compose.test.yml up 
 retest:
 	./retest.sh

@@ -8,10 +8,12 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth/limiter"
 	"github.com/ethereum/go-ethereum/rpc"
+	"gopkg.in/ezzarghili/recaptcha-go.v3"
 )
 
 type balanceInfo struct {
@@ -69,7 +71,7 @@ type formData struct {
 	Recaptcha string
 }
 
-func makeRootHandler(rpcEndpoint string, templatePath string, recaptcha string) func(http.ResponseWriter, *http.Request) {
+func makeRootHandler(rpcEndpoint string, templatePath string, recaptcha string, recaptchaChecker recaptcha.ReCAPTCHA) func(http.ResponseWriter, *http.Request) {
 	handler := func (w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		nodeID := r.FormValue("nodeID")
@@ -82,6 +84,10 @@ func makeRootHandler(rpcEndpoint string, templatePath string, recaptcha string) 
 		case nodeID == "":
 			err = errors.New("nodeID is required")
 		case r.Method == http.MethodPost:
+			err = recaptchaChecker.Verify(r.FormValue("g-recaptcha-response"))
+			if err != nil {
+				break
+			}
 			bInfo, err = addBalance(rpcEndpoint, nodeID, 1000, "foobar")
 			cInfo, err = getBalance(rpcEndpoint, nodeID)
 			if cInfo != nil {
@@ -130,17 +136,15 @@ func main() {
 	rpcport := flag.Int("rpcport", 8545, "Port of the lightserver's rpc endpoint")
 	port := flag.Int("port", 8088, "Web service port of the faucet")
 	templatePath := flag.String("template", "/var/www/faucet.html", "Full path to the html template file")
-	recaptchaPublic := flag.String("recaptcha.public", "hello", "Write it here")
-	recaptchaSecret := flag.String("recaptcha.secret", "xxx", "Write it here")
-	if len(*recaptchaSecret) > 0 {
-		fmt.Println("Recaptcha secret provided")
-	}
+	recaptchaPublic := flag.String("recaptcha.public", "???", "Write it here")
+	recaptchaSecret := flag.String("recaptcha.secret", "", "Write it here")
 	flag.Parse()
+	recaptchaChecker, _ := recaptcha.NewReCAPTCHA(*recaptchaSecret, recaptcha.V2, 10*time.Second)
 
 	// I have to resolve to IP address inside a docker container, it's not working with a name
 	rpcIP := lookupIP(*rpcaddr)
 	rpcEndpoint := fmt.Sprintf("http://%s:%v", rpcIP, *rpcport)
-	rootHandler := makeRootHandler(rpcEndpoint, *templatePath, *recaptchaPublic)
+	rootHandler := makeRootHandler(rpcEndpoint, *templatePath, *recaptchaPublic, recaptchaChecker)
 	wsAddress := fmt.Sprintf(":%v", *port)
 	log.Println("Listening at", wsAddress, ", calling", rpcEndpoint)
 	
