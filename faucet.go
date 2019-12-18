@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -30,7 +31,9 @@ func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topi
 	log.Printf("Server connected")
 
 	var balances []int
-	if err := server.Call(&balances, "les_addBalance", clientNodeID, balance, topic); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	if err := server.CallContext(ctx, &balances, "les_addBalance", clientNodeID, balance, topic); err != nil {
 		return info, fmt.Errorf("les_addBalance %s", err)
 	} 
 	info.BalanceBefore = balances[0]
@@ -54,7 +57,9 @@ func getBalance(serverRPCEndpoint string, nodeID string) (clientInfo,error) {
 	log.Printf("Server connected")
 
 	clientIDs := []string{nodeID}	
-	if err := server.Call(&allInfo, "les_clientInfo", clientIDs); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	if err := server.CallContext(ctx, &allInfo, "les_clientInfo", clientIDs); err != nil {
 		return cInfo, fmt.Errorf("les_clientinfo: %s", err)
 	}
 	cInfo = allInfo[nodeID]
@@ -89,6 +94,9 @@ func makeRootHandler(rpcEndpoint string, templatePath string, recaptcha string, 
 				break
 			}
 			bInfo, err = addBalance(rpcEndpoint, nodeID, 1000, "foobar")
+			if err != nil {
+				break
+			}
 			cInfo, err = getBalance(rpcEndpoint, nodeID)
 			if cInfo != nil {
 				cInfo["pricing/oldBalance"] = bInfo.BalanceBefore
