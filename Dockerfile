@@ -9,6 +9,7 @@ WORKDIR /go
 RUN apk add git
 RUN go get github.com/didip/tollbooth
 RUN go get github.com/didip/tollbooth/limiter
+RUN go get gopkg.in/ezzarghili/recaptcha-go.v3
 ADD faucet.go .
 ADD faucet.html .
 RUN go build faucet.go
