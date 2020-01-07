@@ -78,3 +78,8 @@ number of services, such as
 
 It takes a few minutes until Geth manages to send data to InfluxDB, so
 monitoring data might be not immediately visible.
+
+Running it:
+- Make sure you have a `recaptcha_v2_public.txt` and a `recaptcha_v2_secret.txt` in your folder
+- Run `docker swarm init`
+- Run `docker-compose -f docker-compose.test.yml up`

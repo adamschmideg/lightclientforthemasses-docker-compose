@@ -1,4 +1,4 @@
-version: '3'
+version: '3.1'
 services:
   lightserver:
     image: ethereum/client-go:latest
@@ -11,23 +11,29 @@ services:
       - --rpcaddr=0.0.0.0
       - --goerli
     networks:
-      - server
+      - faucet_network
     ports:
       - "8545:8545"
   faucet:
     build:
       context: .
       dockerfile: ./Dockerfile
+    image: offcode/lightfaucet:latest
     container_name: faucet
     depends_on:
       - lightserver
     networks:
-      - server
+      - faucet_network
     ports:
       - "8088:8088"
     entrypoint:
       - faucet
       - --rpcaddr=lightserver
+      - --recaptcha.public=/run/secrets/recaptcha_public
+      - --recaptcha.secret=/run/secrets/recaptcha_secret
+    secrets:
+      - recaptcha_public
+      - recaptcha_secret
   test_faucet:
     build:
       context: .
@@ -37,8 +43,14 @@ services:
       - lightserver
       - faucet
     networks:
-      - server
+      - faucet_network
 
 networks:
-  server:
-    driver: bridge
+  faucet_network:
+    driver: overlay
+
+secrets:
+  recaptcha_public:
+    file: recaptcha_v2_public.txt
+  recaptcha_secret:
+    file: recaptcha_v2_secret.txt

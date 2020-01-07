@@ -39,6 +39,11 @@ services:
     entrypoint:
       - faucet
       - --rpcaddr=lightserver
+      - --recaptcha.public=$RECAPTCHA_PUBLIC
+      - --recaptcha.secret=$RECAPTCHA_SECRET
+    environment: 
+      - RECAPTCHA_PUBLIC=${RECAPTCHA_PUBLIC}
+      - RECAPTCHA_SECRET=${RECAPTCHA_SECRET}
 
 networks:
   server:

@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -144,15 +145,27 @@ func main() {
 	rpcport := flag.Int("rpcport", 8545, "Port of the lightserver's rpc endpoint")
 	port := flag.Int("port", 8088, "Web service port of the faucet")
 	templatePath := flag.String("template", "/var/www/faucet.html", "Full path to the html template file")
-	recaptchaPublic := flag.String("recaptcha.public", "???", "Write it here")
-	recaptchaSecret := flag.String("recaptcha.secret", "", "Write it here")
+	recaptchaPublicFile := flag.String("recaptcha.public", "recaptcha_v2_test_public.txt", "Path to public key")
+	recaptchaSecretFile := flag.String("recaptcha.secret", "recaptcha_v2_test_secret.txt", "Path to secret key")
 	flag.Parse()
-	recaptchaChecker, _ := recaptcha.NewReCAPTCHA(*recaptchaSecret, recaptcha.V2, 10*time.Second)
+
+	data, err := ioutil.ReadFile(*recaptchaPublicFile)
+	if err != nil {
+		fmt.Println("Can't open recaptcha public %v", err)
+	}
+	recaptchaPublic := string(data)
+	fmt.Println("debug recaptcha.public", *recaptchaPublicFile, recaptchaPublic)
+	data, err = ioutil.ReadFile(*recaptchaSecretFile)
+	if err != nil {
+		fmt.Println("Can't open recaptcha secret %v", err)
+	}
+	recaptchaSecret := string(data)
+	recaptchaChecker, _ := recaptcha.NewReCAPTCHA(recaptchaSecret, recaptcha.V2, 10*time.Second)
 
 	// I have to resolve to IP address inside a docker container, it's not working with a name
 	rpcIP := lookupIP(*rpcaddr)
 	rpcEndpoint := fmt.Sprintf("http://%s:%v", rpcIP, *rpcport)
-	rootHandler := makeRootHandler(rpcEndpoint, *templatePath, *recaptchaPublic, recaptchaChecker)
+	rootHandler := makeRootHandler(rpcEndpoint, *templatePath, recaptchaPublic, recaptchaChecker)
 	wsAddress := fmt.Sprintf(":%v", *port)
 	log.Println("Listening at", wsAddress, ", calling", rpcEndpoint)
 	
