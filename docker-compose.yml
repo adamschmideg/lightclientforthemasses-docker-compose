@@ -1,4 +1,4 @@
-version: '3'
+version: '3.1'
 services:
   influxdb:
     image: influxdb:latest
@@ -9,6 +9,8 @@ services:
       - INFLUXDB_ADMIN_PASSWORD=password
     expose:
       - 8086
+    networks:
+      - faucet_network
   lightserver:
     image: ethereum/client-go:latest
     container_name: lightserver
@@ -30,7 +32,7 @@ services:
     expose:
       - 8545
     networks:
-      - server
+      - faucet_network
   grafana:
     image: grafana/grafana
     container_name: grafana
@@ -41,6 +43,8 @@ services:
       - ./grafana/provisioning/:/etc/grafana/provisioning/
     ports:
       - "3000:3000"
+    networks:
+      - faucet_network
   faucet:
     image: offcode/lightfaucet:latest
     container_name: faucet
@@ -51,14 +55,20 @@ services:
     entrypoint:
       - faucet
       - --rpcaddr=lightserver
-      - --recaptcha.public=$RECAPTCHA_PUBLIC
-      - --recaptcha.secret=$RECAPTCHA_SECRET
+      - --recaptcha.public=/run/secrets/recaptcha_public
+      - --recaptcha.secret=/run/secrets/recaptcha_secret
     networks:
-      - server
-    environment: 
-      - RECAPTCHA_PUBLIC=${RECAPTCHA_PUBLIC}
-      - RECAPTCHA_SECRET=${RECAPTCHA_SECRET}
+      - faucet_network
+    secrets:
+      - recaptcha_public
+      - recaptcha_secret
 
 networks:
-  server:
-    driver: bridge
+  faucet_network:
+    driver: overlay
+
+secrets:
+  recaptcha_public:
+    file: recaptcha_v2_public.txt
+  recaptcha_secret:
+    file: recaptcha_v2_secret.txt
