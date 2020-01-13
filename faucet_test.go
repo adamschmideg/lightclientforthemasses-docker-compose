@@ -4,8 +4,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net"
 	"net/http"
+	"net/http/httptest"
     "testing"
 )
 
@@ -16,23 +16,29 @@ func Init() {
 }
 
 func TestThrottling(t *testing.T) {
-	ips, err := net.LookupIP(*wsaddr)
-	if len(ips) == 0 || err != nil {
-		t.Error("Cannot resolve", *wsaddr)
-		return
-	}
-	ip := ips[0].String()
-	endpoint := fmt.Sprintf("http://%s:%v", ip, "8088")
-	fmt.Println("debug", ip, endpoint)
-	
-	resp1, err := http.Get(endpoint)
+	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
-		t.Errorf("first %s", err)
+		t.Fatal(err)
 	}
-	defer resp1.Body.Close()
-	resp2, err := http.Get(endpoint)
-	if resp2.StatusCode == http.StatusOK {
-		t.Errorf("Expected error for second %s", resp2.Status)
+	rr := httptest.NewRecorder()
+	rc := newRecaptchaCheck("recaptcha_v2_test_public.txt", "recaptcha_v2_test_secret.txt")
+	handler := makeRootHandler(*wsaddr, "faucet.html", *rc)
+	handler.ServeHTTP(rr, req)	
+	fmt.Println("Result", rr.Result().Header)
+	if rr.Code != http.StatusOK {
+		t.Errorf("First expected 200 %v", rr.Code)
 	}
-	defer resp2.Body.Close()
+	fmt.Println("hej", rr)
+
+	n := 0
+	for i := 0; i < 1; i++ {
+		handler.ServeHTTP(rr, req)	
+		if rr.Code != http.StatusOK {
+			n += 1
+			//t.Errorf("Second expected NOT 200 %v", rr.Code)
+		}
+	}
+	if n == 0 {
+		t.Errorf("Second expected NOT 200 %v", rr.Code)
+	}
 }

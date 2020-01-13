@@ -77,20 +77,49 @@ type formData struct {
 	Recaptcha string
 }
 
-func makeRootHandler(rpcEndpoint string, templatePath string, recaptcha string, recaptchaChecker recaptcha.ReCAPTCHA) func(http.ResponseWriter, *http.Request) {
-	handler := func (w http.ResponseWriter, r *http.Request) {
+type recaptchaCheck struct {
+	checker recaptcha.ReCAPTCHA
+	public string
+}
+
+func newRecaptchaCheck(publicPath string, secretPath string) *recaptchaCheck {
+	rc := recaptchaCheck{}
+	var err error
+	data, err := ioutil.ReadFile(publicPath)
+	if err != nil {
+		fmt.Println("Can't open recaptcha public", err)
+		return &rc
+	}
+	rc.public = string(data)
+	data, err = ioutil.ReadFile(secretPath)
+	if err != nil {
+		fmt.Println("Can't open recaptcha secret", err)
+		return &rc
+	}
+	recaptchaSecret := string(data)
+	recaptchaChecker, err := recaptcha.NewReCAPTCHA(recaptchaSecret, recaptcha.V2, 10*time.Second)
+	if err != nil {
+		fmt.Println("Can't make recaptchaChecker")
+		return &rc
+	}
+	rc.checker = recaptchaChecker
+	return &rc
+}
+
+func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck) http.Handler {
+	handlerFunc := func (w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		nodeID := r.FormValue("nodeID")
 		var err error
 		var bInfo balanceInfo
 		var cInfo clientInfo
-		log.Println("handle", r.Method, r.Form)
+		// log.Println("handle", r.Method, r.Form)
 
 		switch {
 		case nodeID == "":
 			err = errors.New("nodeID is required")
 		case r.Method == http.MethodPost:
-			err = recaptchaChecker.Verify(r.FormValue("g-recaptcha-response"))
+			err = rc.checker.Verify(r.FormValue("g-recaptcha-response"))
 			if err != nil {
 				break
 			}
@@ -108,7 +137,7 @@ func makeRootHandler(rpcEndpoint string, templatePath string, recaptcha string, 
 			err = errors.New("Unsupported method")
 		}
 
-		fillData := formData{nodeID, err, bInfo, cInfo, rpcEndpoint, recaptcha}
+		fillData := formData{nodeID, err, bInfo, cInfo, rpcEndpoint, rc.public}
 
 		t, err := template.ParseFiles(templatePath)
 		if err != nil {
@@ -116,14 +145,17 @@ func makeRootHandler(rpcEndpoint string, templatePath string, recaptcha string, 
 			fmt.Fprintln(w, "Internal error")
 			return
 		}
-		fmt.Println("fillData", fillData)
+		// fmt.Println("fillData", fillData)
 		if err := t.Execute(w, fillData); err != nil {
 			log.Println("Executing template", err)
 			fmt.Fprintln(w, "internal error")
 		}
 	}
 
-	return handler
+	lmt := rateLimiter()
+	lmt.SetMethods([]string{"GET", "POST"})
+	handler := http.HandlerFunc(handlerFunc)
+	return tollbooth.LimitHandler(lmt, handler)
 }
 
 func lookupIP(address string) string {
@@ -149,27 +181,15 @@ func main() {
 	recaptchaSecretFile := flag.String("recaptcha.secret", "recaptcha_v2_test_secret.txt", "Path to secret key")
 	flag.Parse()
 
-	data, err := ioutil.ReadFile(*recaptchaPublicFile)
-	if err != nil {
-		fmt.Println("Can't open recaptcha public %v", err)
-	}
-	recaptchaPublic := string(data)
-	fmt.Println("debug recaptcha.public", *recaptchaPublicFile, recaptchaPublic)
-	data, err = ioutil.ReadFile(*recaptchaSecretFile)
-	if err != nil {
-		fmt.Println("Can't open recaptcha secret %v", err)
-	}
-	recaptchaSecret := string(data)
-	recaptchaChecker, _ := recaptcha.NewReCAPTCHA(recaptchaSecret, recaptcha.V2, 10*time.Second)
+	recaptchaCheck := newRecaptchaCheck(*recaptchaPublicFile, *recaptchaSecretFile)
 
 	// I have to resolve to IP address inside a docker container, it's not working with a name
 	rpcIP := lookupIP(*rpcaddr)
 	rpcEndpoint := fmt.Sprintf("http://%s:%v", rpcIP, *rpcport)
-	rootHandler := makeRootHandler(rpcEndpoint, *templatePath, recaptchaPublic, recaptchaChecker)
+	rootHandler := makeRootHandler(rpcEndpoint, *templatePath, *recaptchaCheck)
 	wsAddress := fmt.Sprintf(":%v", *port)
 	log.Println("Listening at", wsAddress, ", calling", rpcEndpoint)
-	
-	lmt := rateLimiter()
-	http.Handle("/", tollbooth.LimitFuncHandler(lmt, rootHandler))
+
+	http.Handle("/", rootHandler)
 	log.Fatal(http.ListenAndServe(wsAddress, nil))
 }
