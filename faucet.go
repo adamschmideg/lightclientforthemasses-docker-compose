@@ -23,18 +23,27 @@ type balanceInfo struct {
 	BalanceAfter  int
 }
 
-func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topic string) (balanceInfo, error) {
-	var info balanceInfo
-	server, err := rpc.Dial(serverRPCEndpoint)
+type client struct { 
+	api *rpc.Client
+}
+
+func newClient(rpcEndpoint string) *client {
+	c := &client{}
+	var err error
+	c.api, err = rpc.Dial(rpcEndpoint)
 	if err != nil {
-		return info, fmt.Errorf("rpc.Dial %s: %s", serverRPCEndpoint, err)
+		fmt.Errorf("rpc.Dial %s: %s", rpcEndpoint, err)
 	}
-	log.Printf("Server connected")
+	return c
+}
+
+func (c* client) addBalance(clientNodeID string, balance int, topic string) (balanceInfo,error) {
+	var info balanceInfo
 
 	var balances []int
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	if err := server.CallContext(ctx, &balances, "les_addBalance", clientNodeID, balance, topic); err != nil {
+	if err := c.api.CallContext(ctx, &balances, "les_addBalance", clientNodeID, balance, topic); err != nil {
 		return info, fmt.Errorf("les_addBalance %s", err)
 	}
 	info.BalanceBefore = balances[0]
@@ -47,20 +56,15 @@ func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topi
 type allClientsInfo map[string]map[string]interface{}
 type clientInfo map[string]interface{}
 
-func getBalance(serverRPCEndpoint string, nodeID string) (clientInfo, error) {
+func (c* client) getBalance(nodeID string) (clientInfo,error) {
 	var allInfo allClientsInfo
 	var cInfo clientInfo
-	log.Printf("GetBalance called at %s for %s", serverRPCEndpoint, nodeID)
-	server, err := rpc.Dial(serverRPCEndpoint)
-	if err != nil {
-		return cInfo, fmt.Errorf("rpc.Dial %s: %s", serverRPCEndpoint, err)
-	}
-	log.Printf("Server connected")
+	log.Printf("GetBalance called for %s", nodeID)
 
 	clientIDs := []string{nodeID}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	if err := server.CallContext(ctx, &allInfo, "les_clientInfo", clientIDs); err != nil {
+	if err := c.api.CallContext(ctx, &allInfo, "les_clientInfo", clientIDs); err != nil {
 		return cInfo, fmt.Errorf("les_clientinfo: %s", err)
 	}
 	cInfo = allInfo[nodeID]
@@ -114,6 +118,7 @@ func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck)
 		var bInfo balanceInfo
 		var cInfo clientInfo
 		log.Println("handle", r.Method, r.Form)
+		c := newClient(rpcEndpoint)
 
 		switch {
 		case nodeID == "":
@@ -123,16 +128,16 @@ func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck)
 			if err != nil {
 				break
 			}
-			bInfo, err = addBalance(rpcEndpoint, nodeID, 1000, "foobar")
+			bInfo, err = c.addBalance(nodeID, 1000, "foobar")
 			if err != nil {
 				break
 			}
-			cInfo, err = getBalance(rpcEndpoint, nodeID)
+			cInfo, err = c.getBalance(nodeID)
 			if cInfo != nil {
 				cInfo["pricing/oldBalance"] = bInfo.BalanceBefore
 			}
 		case r.Method == http.MethodGet:
-			cInfo, err = getBalance(rpcEndpoint, nodeID)
+			cInfo, err = c.getBalance(nodeID)
 		default:
 			err = errors.New("Unsupported method")
 		}
@@ -181,7 +186,6 @@ func main() {
 	flag.Parse()
 
 	recaptchaCheck := newRecaptchaCheck(*recaptchaPublicFile, *recaptchaSecretFile)
-
 	// I have to resolve to IP address inside a docker container, it's not working with a name
 	rpcIP := lookupIP(*rpcaddr)
 	rpcEndpoint := fmt.Sprintf("http://%s:%v", rpcIP, *rpcport)
