@@ -20,10 +20,10 @@ import (
 
 type balanceInfo struct {
 	BalanceBefore int
-	BalanceAfter int
+	BalanceAfter  int
 }
 
-func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topic string) (balanceInfo,error) {
+func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topic string) (balanceInfo, error) {
 	var info balanceInfo
 	server, err := rpc.Dial(serverRPCEndpoint)
 	if err != nil {
@@ -36,7 +36,7 @@ func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topi
 	defer cancel()
 	if err := server.CallContext(ctx, &balances, "les_addBalance", clientNodeID, balance, topic); err != nil {
 		return info, fmt.Errorf("les_addBalance %s", err)
-	} 
+	}
 	info.BalanceBefore = balances[0]
 	info.BalanceAfter = balances[1]
 	log.Println("AddBalance success", balances)
@@ -47,7 +47,7 @@ func addBalance(serverRPCEndpoint string, clientNodeID string, balance int, topi
 type allClientsInfo map[string]map[string]interface{}
 type clientInfo map[string]interface{}
 
-func getBalance(serverRPCEndpoint string, nodeID string) (clientInfo,error) {
+func getBalance(serverRPCEndpoint string, nodeID string) (clientInfo, error) {
 	var allInfo allClientsInfo
 	var cInfo clientInfo
 	log.Printf("GetBalance called at %s for %s", serverRPCEndpoint, nodeID)
@@ -57,7 +57,7 @@ func getBalance(serverRPCEndpoint string, nodeID string) (clientInfo,error) {
 	}
 	log.Printf("Server connected")
 
-	clientIDs := []string{nodeID}	
+	clientIDs := []string{nodeID}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 	if err := server.CallContext(ctx, &allInfo, "les_clientInfo", clientIDs); err != nil {
@@ -69,17 +69,17 @@ func getBalance(serverRPCEndpoint string, nodeID string) (clientInfo,error) {
 }
 
 type formData struct {
-	NodeID string
-	Error error
-	Balance balanceInfo
-	Client clientInfo
+	NodeID      string
+	Error       error
+	Balance     balanceInfo
+	Client      clientInfo
 	RPCEndpoint string
-	Recaptcha string
+	Recaptcha   string
 }
 
 type recaptchaCheck struct {
 	checker recaptcha.ReCAPTCHA
-	public string
+	public  string
 }
 
 func newRecaptchaCheck(publicPath string, secretPath string) *recaptchaCheck {
@@ -107,13 +107,13 @@ func newRecaptchaCheck(publicPath string, secretPath string) *recaptchaCheck {
 }
 
 func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck) http.Handler {
-	handlerFunc := func (w http.ResponseWriter, r *http.Request) {
+	handlerFunc := func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		nodeID := r.FormValue("nodeID")
 		var err error
 		var bInfo balanceInfo
 		var cInfo clientInfo
-		// log.Println("handle", r.Method, r.Form)
+		log.Println("handle", r.Method, r.Form)
 
 		switch {
 		case nodeID == "":
@@ -153,14 +153,13 @@ func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck)
 	}
 
 	lmt := rateLimiter()
-	lmt.SetMethods([]string{"GET", "POST"})
 	handler := http.HandlerFunc(handlerFunc)
 	return tollbooth.LimitHandler(lmt, handler)
 }
 
 func lookupIP(address string) string {
 	ips, _ := net.LookupIP(address)
-	if (len(ips) > 0) {
+	if len(ips) > 0 {
 		return ips[0].String()
 	}
 	return address
