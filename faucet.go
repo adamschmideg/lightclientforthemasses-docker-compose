@@ -14,6 +14,7 @@ import (
 
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth/limiter"
+	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/ethereum/go-ethereum/rpc"
 	"gopkg.in/ezzarghili/recaptcha-go.v3"
 )
@@ -72,12 +73,24 @@ func (c* client) getBalance(nodeID string) (clientInfo,error) {
 	return cInfo, nil
 }
 
+func (c* client) getServerENode() (string,error) {
+	var nodeInfo p2p.NodeInfo
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+	defer cancel()
+	if err := c.api.CallContext(ctx, &nodeInfo, "admin_nodeInfo"); err != nil {
+		return "", fmt.Errorf("admin_nodeInfo: %s", err)
+	}
+	log.Printf("Got nodeInfo %s", nodeInfo.Enode)
+	return nodeInfo.Enode, nil
+
+}
+
 type formData struct {
 	NodeID      string
 	Error       error
 	Balance     balanceInfo
 	Client      clientInfo
-	RPCEndpoint string
+	ServerENode string
 	Recaptcha   string
 }
 
@@ -117,6 +130,7 @@ func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck)
 		var err error
 		var bInfo balanceInfo
 		var cInfo clientInfo
+		var serverENode string
 		log.Println("handle", r.Method, r.Form)
 		c := newClient(rpcEndpoint)
 
@@ -138,11 +152,12 @@ func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck)
 			}
 		case r.Method == http.MethodGet:
 			cInfo, err = c.getBalance(nodeID)
+			serverENode, err = c.getServerENode()
 		default:
 			err = errors.New("Unsupported method")
 		}
 
-		fillData := formData{nodeID, err, bInfo, cInfo, rpcEndpoint, rc.public}
+		fillData := formData{nodeID, err, bInfo, cInfo, serverENode, rc.public}
 
 		t, err := template.ParseFiles(templatePath)
 		if err != nil {

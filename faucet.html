@@ -12,7 +12,7 @@
     <body>
         <div class="container">
             <form class="text-horizontal" action="/" method="POST" role="form">
-                <p class="h4 mb-4">Give me priority access to the Light Server at {{ .RPCEndpoint }}</p>
+                <p class="h4 mb-4">Give me priority access to the Light Server at <var>{{ .ServerENode }}</var></p>
                 <input type="text" id="nodeID" name="nodeID" class="form-control mb-4" placeholder="NodeID" value="{{ .NodeID }}">
                 {{ if .Recaptcha }}
                 <div class="g-recaptcha" data-sitekey="{{ .Recaptcha }}"></div>
