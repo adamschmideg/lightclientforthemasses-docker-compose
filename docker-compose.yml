@@ -25,6 +25,8 @@ services:
       - --metrics.influxdb.password=password
       - --metrics.influxdb.database=metrics
       - --lightserv=100
+      - --nousb
+      - --syncmode=fast
       - --rpc
       - --rpcapi=les,admin
       - --rpcaddr=0.0.0.0

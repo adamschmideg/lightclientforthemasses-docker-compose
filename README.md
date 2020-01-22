@@ -96,3 +96,14 @@ Now you can run `go test`. If you want to run a light faucet connected to the se
 go run faucet.go --template ./faucet.html --recaptcha.public recaptcha.v2.public --recaptcha.secret recaptcha.v2.secret
 ```
 then visit http://localhost:8088
+
+## Use it as a client
+
+1. Start your client with `geth --syncmode light --goerli`
+2. Get your nodeID running in another terminal `geth attach --exec 'admin.nodeInfo.id'`
+3. Visit the [experimental light faucet](http://ec2-13-48-178-34.eu-north-1.compute.amazonaws.com:8088/)
+4. Paste the nodeID in the form field and click the button
+5. Copy the server's enode as it's displayed on the site
+6. Add the server's enode to your client as a peer `geth attach --exec 'admin.addPeer("...")'` pasting the whole enode string between the quotes.
+
+Check 
