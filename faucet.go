@@ -19,9 +19,23 @@ import (
 	"gopkg.in/ezzarghili/recaptcha-go.v3"
 )
 
+// How many tokens the faucet gives at a request
+const tokensPerRequest = 3_000_000_000
+
+type internalTokens int
+type minits int
+
+func toMinits(n internalTokens) minits {
+	return minits(n / tokensPerRequest)
+}
+
+func fromMinits(n minits) internalTokens {
+	return internalTokens(n * tokensPerRequest)
+}
+
 type balanceInfo struct {
-	BalanceBefore int
-	BalanceAfter  int
+	BalanceBefore minits
+	BalanceAfter  minits
 }
 
 type client struct { 
@@ -38,17 +52,18 @@ func newClient(rpcEndpoint string) *client {
 	return c
 }
 
-func (c* client) addBalance(clientNodeID string, balance int, topic string) (balanceInfo,error) {
+func (c* client) addBalance(clientNodeID string, minitsToAdd minits, topic string) (balanceInfo,error) {
 	var info balanceInfo
 
-	var balances []int
+	var balances []internalTokens
+	tokens := fromMinits(minitsToAdd)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
-	if err := c.api.CallContext(ctx, &balances, "les_addBalance", clientNodeID, balance, topic); err != nil {
+	if err := c.api.CallContext(ctx, &balances, "les_addBalance", clientNodeID, tokens, topic); err != nil {
 		return info, fmt.Errorf("les_addBalance %s", err)
 	}
-	info.BalanceBefore = balances[0]
-	info.BalanceAfter = balances[1]
+	info.BalanceBefore = toMinits(balances[0])
+	info.BalanceAfter = toMinits(balances[1])
 	log.Println("AddBalance success", balances)
 
 	return info, nil
@@ -142,7 +157,7 @@ func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck)
 			if err != nil {
 				break
 			}
-			bInfo, err = c.addBalance(nodeID, 1000, "foobar")
+			bInfo, err = c.addBalance(nodeID, tokensPerRequest, "foobar")
 			if err != nil {
 				break
 			}
