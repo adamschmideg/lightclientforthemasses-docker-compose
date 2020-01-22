@@ -83,3 +83,16 @@ Running it:
 - Make sure you have a `recaptcha_v2_public.txt` and a `recaptcha_v2_secret.txt` in your folder
 - Run `docker swarm init`
 - Run `docker-compose -f docker-compose.test.yml up`
+
+## Development workflow
+
+Start 
+```sh
+geth --datadir ~/datadirs/goerli/fast --syncmode fast --lightserv=100 --rpc --rpcapi=admin,les,web3 --goerli
+```
+
+Now you can run `go test`. If you want to run a light faucet connected to the server, run 
+```sh
+go run faucet.go --template ./faucet.html --recaptcha.public recaptcha.v2.public --recaptcha.secret recaptcha.v2.secret
+```
+then visit http://localhost:8088
