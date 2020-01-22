@@ -53,7 +53,7 @@ services:
     ports:
       - "8088:8088"
     entrypoint:
-      - faucet
+      - lightfaucet
       - --rpcaddr=lightserver
       - --recaptcha.public=/run/secrets/recaptcha_public
       - --recaptcha.secret=/run/secrets/recaptcha_secret

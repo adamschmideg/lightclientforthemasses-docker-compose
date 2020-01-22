@@ -4,7 +4,7 @@ ADD . /lightfaucet
 RUN cd /lightfaucet && go build
 
 FROM alpine:latest AS production
-COPY --from=builder /lightfaucet/faucet /usr/local/bin/
+COPY --from=builder /lightfaucet/lightfaucet /usr/local/bin/
 COPY --from=builder /lightfaucet/faucet.html /var/www/
 EXPOSE 8088
-ENTRYPOINT ["faucet"]
+ENTRYPOINT ["lightfaucet"]
