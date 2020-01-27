@@ -28,11 +28,14 @@ services:
       - --nousb
       - --syncmode=fast
       - --rpc
-      - --rpcapi=les,admin
+      - --rpcapi=admin,eth,les
       - --rpcaddr=0.0.0.0
       - --goerli
     expose:
       - 8545
+    ports:
+      - "30303:30303"
+      - "30303:30303/udp"
     networks:
       - faucet_network
   grafana:
