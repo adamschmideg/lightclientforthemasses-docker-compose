@@ -20,17 +20,17 @@ import (
 )
 
 // How many tokens the faucet gives at a request
-const tokensPerRequest = 3_000_000_000
+const tokensPerMinit = 3_000_000_000
 
 type internalTokens int
 type minits int
 
 func toMinits(n internalTokens) minits {
-	return minits(n / tokensPerRequest)
+	return minits(n / tokensPerMinit)
 }
 
 func fromMinits(n minits) internalTokens {
-	return internalTokens(n * tokensPerRequest)
+	return internalTokens(n * tokensPerMinit)
 }
 
 type balanceInfo struct {
@@ -157,7 +157,7 @@ func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck)
 			if err != nil {
 				break
 			}
-			bInfo, err = c.addBalance(nodeID, tokensPerRequest, "foobar")
+			bInfo, err = c.addBalance(nodeID, 1, "foobar")
 			if err != nil {
 				break
 			}
