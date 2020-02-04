@@ -164,6 +164,7 @@ func makeRootHandler(rpcEndpoint string, templatePath string, rc recaptchaCheck)
 			cInfo, err = c.getBalance(nodeID)
 			if cInfo != nil {
 				cInfo["pricing/oldBalance"] = bInfo.BalanceBefore
+				cInfo["pricing/newBalance"] = bInfo.BalanceAfter
 			}
 		case r.Method == http.MethodGet:
 			cInfo, err = c.getBalance(nodeID)
