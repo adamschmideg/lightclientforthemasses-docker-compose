@@ -3,6 +3,7 @@ package main
 import (
 	"os/exec"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -15,68 +16,79 @@ func TestEnode(t *testing.T) {
 	t.Log(addPeer)
 }
 
+var rpcArgs = []string{"--rpc", "--rpcapi=admin,eth,les", "--rpcaddr=0.0.0.0"}
+
+type geth struct {
+	datadir string
+	args []string
+	cmd *exec.Cmd
+}
+
+func startGeth(datadir string, keepDatadir bool, args ...string) (*geth, error) {
+	g := &geth{datadir, args, nil}
+	if !keepDatadir {
+		err := os.RemoveAll(datadir)
+		if err != nil {
+			return g, err
+		}
+	}
+	allArgs := []string{"--datadir", datadir}
+	allArgs = append(allArgs, rpcArgs...)
+	allArgs = append(allArgs, args...)
+	cmd := exec.Command("geth", allArgs...)
+	log.Println("to start", cmd.String())
+	err := cmd.Start()
+	g.cmd = cmd
+	if err != nil {
+		return g, err
+	}
+	time.Sleep(1 * time.Second) // wait before we can attach to it
+	return g, nil
+}
+
+func (g *geth) exec(js string) (string, error) {
+	allArgs := []string{"--datadir", g.datadir}
+	execArgs := []string{"attach", "--exec", js}
+	allArgs = append(allArgs, rpcArgs...)
+	allArgs = append(allArgs, execArgs...)
+	cmd := exec.Command("geth", allArgs...)
+	log.Println("to exec", cmd.String())
+	var b []byte
+	b, err := cmd.CombinedOutput()
+	out := strings.Trim(string(b), " \n\r\t\"")
+	if err != nil {
+		return out, err
+	}
+	return out, nil
+}
+
+func (g *geth) kill() error {
+	return g.cmd.Process.Kill()
+}
+
 func TestDemo(t *testing.T) {
-	var err error
-	commonArgs := []string{"--rpc", "--rpcapi=admin,eth,les", "--rpcaddr=0.0.0.0"}
-	// Start lightserver with 1 slot for light clients
-	serverDatadir := "./datadirs/goerli/fast"
-	serverArgs :=  []string{"--lightserv=100", "--light.maxpeers=1", "--datadir", serverDatadir, "--goerli"}
-	var args []string
-	args = append([]string{}, commonArgs...)
-	args = append(args, serverArgs...)
-	cmdServer := exec.Command("geth", args...)
-	if err = cmdServer.Start(); err != nil {
-		t.Error("start", err)
-	}
-	t.Log("started", cmdServer.String())
-	time.Sleep(1 * time.Second) // wait before we can attach to it
-
-	// Get the server's enode
-	enodeExec := exec.Command("geth", "attach", "--exec", "admin.nodeInfo.enode", "--datadir", serverDatadir)
-	var out []byte
-	out, err = enodeExec.CombinedOutput()
+	server, err := startGeth("./datadirs/goerli/fast", true, "--lightserv=100", "--light.maxpeers=1", "--goerli", "--syncmode=fast")
 	if err != nil {
-		t.Error("enode", err, string(out))
-		out = nil
+		t.Error(server.cmd.String(), err)
 	}
-	enodeRaw := string(out)
-	enode := strings.Trim(enodeRaw, " \n\r\"")
-
-	// Start a light client with an empty datadir
-	clientDir := "./datadirs/goerli/light"
-	err = os.RemoveAll(clientDir)
+	enode, err := server.exec("admin.nodeInfo.enode")
 	if err != nil {
-		t.Error("rmdir", err)
+		t.Error(enode, err)
 	}
-	clientArgs := []string{"--syncmode=light", "--datadir", clientDir, "--nodiscover"}
-	args = append([]string{}, commonArgs...)
-	args = append(args, clientArgs...)
-	cmdClient := exec.Command("geth", args...)
-	if err = cmdClient.Start(); err != nil {
-		t.Error("start client", err)
+	client, err := startGeth("./datadirs/goerli/light", false, "--syncmode=light", "--nodiscover")
+	if err != nil {
+		t.Error(server.cmd.String(), err)
 	}
-	t.Log("started", cmdClient.String())
-	time.Sleep(1 * time.Second) // wait before we can attach to it
-
-	// Add the server as peer to let this client start syncing
 	addPeerJs := fmt.Sprintf(`'admin.addPeer("%v")'`, enode)
-	t.Log("peer", addPeerJs)
-	cmdAddPeer := exec.Command("geth", "attach", "--datadir", clientDir, "--exec", addPeerJs)
-	out, err = cmdAddPeer.CombinedOutput()
+	addPeerResult, err := server.exec(addPeerJs)
 	if err != nil {
-		t.Error("addPeer", cmdAddPeer.String(), err, string(out))
-		out = nil
+		t.Error(addPeerResult, err)
 	}
-	addPeerResult := string(out)
+	t.Log(enode)
 	t.Log("addPeer", addPeerResult)
-
-	// Tear down: kill all process
-	if err = cmdServer.Process.Kill(); err != nil {
-		t.Error("kill server", err)
-	}
-	if err = cmdClient.Process.Kill(); err != nil {
-		t.Error("kill client", err)
-	}
+	server.kill()
+	client.kill()
+}
 
 // Start a priority client with an empty datadir
 // Get the nodeID of the priority client
@@ -84,4 +96,3 @@ func TestDemo(t *testing.T) {
 // Add the server as peer to let priority client start syncing
 // Check if it's actually syncing
 // Check if the regular client got kicked out
-}
