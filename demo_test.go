@@ -138,7 +138,6 @@ func TestDemo(t *testing.T) {
 	if err := client.addPeer(enode); err != nil {
 		t.Fatal("addPeer", err)
 	}
-
 	var peers []interface{}
 	if err := client.rpc.Call(&peers, "admin_peers"); err != nil {
 		t.Fatal("peers", err)
@@ -148,43 +147,39 @@ func TestDemo(t *testing.T) {
 		t.Fail()
 	}
 	t.Log("peers", peers)
-	/*
-		clientSyncResult, err := client.exec("eth.syncing")
-		if clientSyncResult == "false" {
-			t.Log("expected client to sync, but", clientSyncResult)
-			t.Fail()
-		}
 
-		// Priority client
-		prio, err := startGeth("./datadirs/goerli/prio", false, "--syncmode=light", "--nodiscover")
-		defer prio.kill()
-		if err != nil {
-			t.Fatal(prio.cmd.String(), err)
-		}
-		addPeerToPrioResult, err := prio.exec(addPeerJs)
-		if err != nil {
-			t.Fatal(addPeerToPrioResult, err)
-		}
-		t.Log("addPeerToPrio", addPeerToPrioResult)
-		nodeID, err := prio.exec("admin.nodeInfo.id")
-		tokens := 3_000_000_000
-		addBalanceJs := fmt.Sprintf(`'les.addBalance("%v", %v, "foobar")'`, nodeID, tokens)
-		addBalanceResult, err := server.exec(addBalanceJs)
-		if err != nil {
-			t.Fatal("addBalance", addBalanceResult, err)
-		}
+	// Priority client
+	prio, err := startGeth("./datadirs/goerli/prio", false, "--goerli", "--syncmode=light", "--nodiscover")
+	defer prio.kill()
+	if err != nil {
+		t.Fatal(prio.cmd.String(), err)
+	}
+	prioNodeInfo := make(map[string]interface{})
+	if err := prio.rpc.Call(&prioNodeInfo, "admin_nodeInfo"); err != nil {
+		t.Fatal("prio nodeInfo:", err)
+	}
+	nodeID := prioNodeInfo["id"].(string)
+	t.Log("nodeID", nodeID)
+	tokens := 3_000_000_000
+	if err := server.rpc.Call(nil, "les_addBalance", nodeID, tokens, "foobar"); err != nil {
+		t.Fatal("addBalance:", err)
+	}
+	if err := prio.addPeer(enode); err != nil {
+		t.Fatal("addPeer", err)
+	}
 
-		// Check if priority client is actually syncing and the regular client got kicked out
-		time.Sleep(1 * time.Second) // wait before old client gets kicked out
-		clientSyncResult, err = client.exec("eth.syncing")
-		if clientSyncResult != "false" {
-			t.Log("expected client sync to be false, but", clientSyncResult)
-			t.Fail()
-		}
-		prioSyncResult, err := prio.exec("eth.syncing")
-		if prioSyncResult == "false" {
-			t.Log("expected prio sync, but", prioSyncResult)
-			t.Fail()
-		}
-	*/
+	// Check if priority client is actually syncing and the regular client got kicked out
+	if err := prio.rpc.Call(&peers, "admin_peers"); err != nil {
+		t.Fatal("prio peers", err)
+	}
+	if len(peers) == 0 {
+		t.Fatal("Expected: # of prio peers > 0")
+	}
+
+	if err := client.rpc.Call(&peers, "admin_peers"); err != nil {
+		t.Fatal("client peers", err)
+	}
+	if len(peers) > 0 {
+		t.Fatal("Expected: # of client peers == 0")
+	}
 }
