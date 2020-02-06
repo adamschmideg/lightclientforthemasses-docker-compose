@@ -57,6 +57,28 @@ func startGeth(datadir string, keepDatadir bool, args ...string) (*geth, error) 
 	return g, nil
 }
 
+
+// Start and wait for it to finish
+func runGeth(datadir string, keepDatadir bool, args ...string) error {
+	if !keepDatadir {
+		if err := os.RemoveAll(datadir); err != nil {
+			return err
+		}
+	}
+	allArgs := []string{"--datadir", datadir}
+	allArgs = append(allArgs, args...)
+	cmd := exec.Command("geth", allArgs...)
+	log.Println("to run", cmd.String())
+	cmd.Stderr = os.Stderr
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("starting but %s", err)
+	}
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("waiting but %s", err)
+	}
+	return nil
+}
+
 func (g *geth) ipcpath() string {
 	return filepath.Join(g.datadir, "geth.ipc")
 }
@@ -110,6 +132,92 @@ func (g *geth) waitSynced() error {
 		case <-timeout:
 			return fmt.Errorf("timeout syncing")
 		}
+	}
+}
+
+func TestPrivate(t *testing.T) {
+	// Init and start server
+	t.Log("starting")
+	datadir := "./datadirs/private"
+	if err := runGeth(datadir, false, "init", "./initdata/testGenesis.json"); err != nil {
+		t.Fatal("init:", err)
+	}
+	t.Log("init done")
+	if err := runGeth(datadir, true, "--gcmode=archive", "import", "./initdata/testBlockchain.blocks"); err != nil {
+		t.Fatal("import", err)
+	}
+	t.Log("import done")
+	server, err := startGeth(datadir, true, "--networkid=42", "--light.serve=100", "--light.maxpeers=1", "--nodiscover", "--nat=extip:127.0.0.1")
+	defer server.kill()
+	if err != nil {
+		t.Fatal("start server", err)
+	}
+	nodeInfo := make(map[string]interface{})
+	if err := server.rpc.Call(&nodeInfo, "admin_nodeInfo"); err != nil {
+		t.Fatal("nodeInfo:", err)
+	}
+	enode := nodeInfo["enode"].(string)
+	t.Log("enode", enode)
+
+	// Client
+	clientdir := "/tmp/client"
+	if err := runGeth(clientdir, false, "init", "./initdata/testGenesis.json"); err != nil {
+		t.Fatal("init client", err)
+	}
+	client, err := startGeth(clientdir, true, "--networkid=42", "--syncmode=light", "--nodiscover")
+	defer client.kill()
+	if err != nil {
+		t.Fatal("start client", err)
+	}
+	if err := client.addPeer(enode); err != nil {
+		t.Fatal("addPeer", err)
+	}
+	var peers []interface{}
+	if err := client.rpc.Call(&peers, "admin_peers"); err != nil {
+		t.Fatal("peers", err)
+	}
+	if len(peers) != 1 {
+		t.Log("Expected: # of client peers == 1")
+		t.Fail()
+	}
+
+	// Priority client
+	priodir := "/tmp/prio"
+	if err := runGeth(priodir, false, "init", "./initdata/testGenesis.json"); err != nil {
+		t.Fatal("init prio", err)
+	}
+	prio, err := startGeth(priodir, true, "--networkid=42", "--syncmode=light", "--nodiscover")
+	defer prio.kill()
+	if err != nil {
+		t.Fatal(prio.cmd.String(), err)
+	}
+	prioNodeInfo := make(map[string]interface{})
+	if err := prio.rpc.Call(&prioNodeInfo, "admin_nodeInfo"); err != nil {
+		t.Fatal("prio nodeInfo:", err)
+	}
+	nodeID := prioNodeInfo["id"].(string)
+	t.Log("nodeID", nodeID)
+	tokens := 3_000_000_000
+	if err := server.rpc.Call(nil, "les_addBalance", nodeID, tokens, "foobar"); err != nil {
+		t.Fatal("addBalance:", err)
+	}
+	if err := prio.addPeer(enode); err != nil {
+		t.Fatal("addPeer", err)
+	}
+
+	// Check if priority client is actually syncing and the regular client got kicked out
+	if err := prio.rpc.Call(&peers, "admin_peers"); err != nil {
+		t.Fatal("prio peers", err)
+	}
+	if len(peers) != 1 {
+		t.Fatal("Expected: # of prio peers == 1")
+	}
+
+	if err := client.rpc.Call(&peers, "admin_peers"); err != nil {
+		t.Fatal("client peers", err)
+	}
+	if len(peers) > 0 {
+		t.Fatal("Expected: # of client peers == 0")
 	}
 }
 
@@ -182,4 +290,6 @@ func TestDemo(t *testing.T) {
 	if len(peers) > 0 {
 		t.Fatal("Expected: # of client peers == 0")
 	}
+	
+
 }
